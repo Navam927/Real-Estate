@@ -8,6 +8,8 @@ import {
   deleteUserStart,
   deleteUserSuccess,
   signOutUserStart,
+  signOutUserSuccess,
+  signOutUserFailure
 } from '../redux/user/userSlice';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -23,12 +25,6 @@ export default function Profile() {
   const [showListingsError, setShowListingsError] = useState(false);
   const [userListings, setUserListings] = useState([]);
   const dispatch = useDispatch();
-
-  // firebase storage
-  // allow read;
-  // allow write: if
-  // request.resource.size < 2 * 1024 * 1024 &&
-  // request.resource.contentType.matches('image/.*')
 
   useEffect(() => {
     if (file) {
@@ -114,20 +110,21 @@ const handleFileUpload = (file) => {
   const handleSignout = async () => {
     console.log('signoutUser started');
     try {
-      //dispatch(signoutUserStart());
+      dispatch(signOutUserStart());
       console.log('action dispatched');
       const res = await fetch('/api/auth/signout');
       console.log('route fetched');
       const data = await res.json();
       if (data.success === false) {
         console.error('data fetch failure');
-        //dispatch(signoutUserFailure(data.message));
+        dispatch(signOutUserFailure(data.message));
         return;
       } else {
         console.log('data fetched successfully');
       }
-      //dispatch(signoutUserSuccess());
-      console.log('action dispatched and user signedout');
+      
+      dispatch(signOutUserSuccess());
+      console.log('action dispatched and user signed out');
     } catch (error) {
 
     }
