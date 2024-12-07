@@ -55,3 +55,17 @@ app.use((err, req, res, next) => {
     message,
   });
 });
+
+const isCloudinaryConnected = async () => {
+  try {
+    await cloudinary.v2.api.resources();
+    return true;
+  } catch (error) {
+    console.error('Cloudinary connection error:', error);
+    return false;
+  }
+};if (await isCloudinaryConnected()) {
+  console.log('Cloudinary is connected');
+} else {
+  console.log('Cloudinary is not connected');
+}

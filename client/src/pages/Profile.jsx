@@ -1,13 +1,6 @@
 import { useSelector } from 'react-redux';
 import { useRef, useState, useEffect } from 'react';
 import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from 'firebase/storage';
-import { app } from '../firebase';
-import {
   updateUserStart,
   updateUserSuccess,
   updateUserFailure,
@@ -18,6 +11,7 @@ import {
 } from '../redux/user/userSlice';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 export default function Profile() {
   const fileRef = useRef(null);
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -42,29 +36,35 @@ export default function Profile() {
     }
   }, [file]);
 
-  const handleFileUpload = (file) => {
-    const storage = getStorage(app);
-    const fileName = new Date().getTime() + file.name;
-    const storageRef = ref(storage, fileName);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+  
 
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setFilePerc(Math.round(progress));
-      },
-      (error) => {
-        setFileUploadError(true);
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) =>
-          setFormData({ ...formData, avatar: downloadURL })
+const handleFileUpload = (file) => {
+  const CLOUD_NAME = "dy4lefnyu";
+  const UPLOAD_PRESET = "Real-Estate";
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", UPLOAD_PRESET);
+
+  axios
+    .post(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, formData, {
+      onUploadProgress: (progressEvent) => {
+        const progress = Math.round(
+          (progressEvent.loaded / progressEvent.total) * 100
         );
-      }
-    );
-  };
+        setFilePerc(progress);
+      },
+    })
+    .then((response) => {
+      const downloadURL = response.data.secure_url;
+      setFormData({ ...formData, avatar: downloadURL });
+    })
+    .catch((error) => {
+      setFileUploadError(true);
+      console.error("Error uploading file:", error);
+    });
+};
+
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -111,31 +111,41 @@ export default function Profile() {
     }
   };
 
-  const handleSignOut = async () => {
+  const handleSignout = async () => {
+    console.log('signoutUser started');
     try {
-      dispatch(signOutUserStart());
+      //dispatch(signoutUserStart());
+      console.log('action dispatched');
       const res = await fetch('/api/auth/signout');
+      console.log('route fetched');
       const data = await res.json();
       if (data.success === false) {
-        dispatch(deleteUserFailure(data.message));
+        console.error('data fetch failure');
+        //dispatch(signoutUserFailure(data.message));
         return;
+      } else {
+        console.log('data fetched successfully');
       }
-      dispatch(deleteUserSuccess(data));
+      //dispatch(signoutUserSuccess());
+      console.log('action dispatched and user signedout');
     } catch (error) {
-      dispatch(deleteUserFailure(data.message));
+
     }
-  };
+  }
 
   const handleShowListings = async () => {
     try {
+      console.log('handle show listings called')
       setShowListingsError(false);
       const res = await fetch(`/api/user/listings/${currentUser._id}`);
       const data = await res.json();
       if (data.success === false) {
         setShowListingsError(true);
         return;
+      } else {
+        console.log('data fetched successfully');
       }
-
+      console.log(data)
       setUserListings(data);
     } catch (error) {
       setShowListingsError(true);
@@ -233,7 +243,7 @@ export default function Profile() {
         >
           Delete account
         </span>
-        <span onClick={handleSignOut} className='text-red-700 cursor-pointer'>
+        <span onClick={handleSignout} className='text-red-700 cursor-pointer'>
           Sign out
         </span>
       </div>
