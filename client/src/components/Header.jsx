@@ -27,7 +27,7 @@ export default function Header() {
       <div className='flex justify-between items-center max-w-6xl mx-auto p-3'>
         <Link to='/'>
           <h1 className='font-bold text-sm sm:text-xl flex flex-wrap'>
-            <span className='text-slate-500'>Riyal</span>
+            <span className='text-slate-500'>Real</span>
             <span className='text-slate-700'>Estate</span>
           </h1>
         </Link>
@@ -55,6 +55,11 @@ export default function Header() {
           <Link to='/about'>
             <li className='hidden sm:inline text-slate-700 hover:underline'>
               About
+            </li>
+          </Link>
+          <Link to='http://localhost:5174'>
+            <li className='hidden sm:inline text-slate-700 hover:underline'>
+              Our Insights
             </li>
           </Link>
           <Link to='/profile'>

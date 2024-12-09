@@ -9,11 +9,21 @@ import {
   deleteUserSuccess,
   signOutUserStart,
   signOutUserSuccess,
-  signOutUserFailure
+  signOutUserFailure,
+  fetchUserStart,
+  fetchUserSuccess,
+  fetchUserFailure,
+  toggle2faStart,
+  toggle2faFailure,
+  toggle2faSuccess
 } from '../redux/user/userSlice';
 import { useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { current } from '@reduxjs/toolkit';
+
+
+//import { current } from '@reduxjs/toolkit';
 export default function Profile() {
   const fileRef = useRef(null);
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -25,6 +35,7 @@ export default function Profile() {
   const [showListingsError, setShowListingsError] = useState(false);
   const [userListings, setUserListings] = useState([]);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (file) {
@@ -32,7 +43,67 @@ export default function Profile() {
     }
   }, [file]);
 
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        dispatch(fetchUserStart());
+        const response = await axios.get(`http://localhost:3000/api/user/${currentUser._id}`);
+        dispatch(fetchUserSuccess(response.data));
+      } catch (error) {
+        dispatch(fetchUserFailure(error.message));
+      }
+    }
+  })
+
+
+const handleButtonClick = async () => {
+  console.log('handle button clicked');
+  console.log(currentUser.twoFAEnabled);
+  if (currentUser === null || currentUser._id === undefined) {
+    console.error('currentUser is null or undefined');
+    return;
+  }
   
+  const result = await axios.get(`http://localhost:3000/api/user/status/${currentUser._id}`);
+  console.log(result);
+
+  if (!result) {
+    if (window.confirm('Are you sure you want to disable 2FA?')) {
+      axios
+        .post(`http:localhost:3000/api/auth/disable2fa/${currentUser._id}`)
+        .then((response) => {
+          if (response.data.success) {
+            dispatch(updateUserSuccess(response.data.user));
+          } else {
+            console.error('Failed to disable 2FA');
+          }
+        })
+        .catch((error) => {
+          console.error('Error disabling 2FA:', error);
+        });
+    }
+  } else {
+    console.log('enabling 2FA');
+    if (window.confirm('Are you sure you want to enable 2FA?')) {
+      try {
+        dispatch(toggle2faStart());
+        const response = await axios.post(`/api/auth/enable2fa/${currentUser._id}`);
+        if (response.data.success) {
+          
+          console.log('Response received:', response.data);
+          navigate(`/verify-otp/${response.data.user._id}`);
+        } else {
+          dispatch(toggle2faFailure(response.data.message));
+          console.error('Failed to enable 2FA:', response.data.message);
+        }
+      } catch (error) {
+        dispatch(toggle2faFailure());
+        console.error('Error enabling 2FA:', error.response?.data?.message || error.message);
+      }
+    }
+    
+  }
+}
 
 const handleFileUpload = (file) => {
   const CLOUD_NAME = "dy4lefnyu";
@@ -126,7 +197,7 @@ const handleFileUpload = (file) => {
       dispatch(signOutUserSuccess());
       console.log('action dispatched and user signed out');
     } catch (error) {
-
+      dispatch(signOutUserFailure(error.message));
     }
   }
 
@@ -167,6 +238,9 @@ const handleFileUpload = (file) => {
       console.log(error.message);
     }
   };
+
+  
+
   return (
     <div className='p-3 max-w-lg mx-auto'>
       <h1 className='text-3xl font-semibold text-center my-7'>Profile</h1>
@@ -240,6 +314,12 @@ const handleFileUpload = (file) => {
         >
           Delete account
         </span>
+
+          <span onClick={handleButtonClick} className={currentUser.twoFAEnabled ? 'text-red-700 cursor-pointer' : 'text-green-700 cursor-pointer'}>
+            {currentUser.twoFAEnabled ? 'Disable 2FA' : 'Enable 2FA'}
+        </span>
+
+
         <span onClick={handleSignout} className='text-red-700 cursor-pointer'>
           Sign out
         </span>

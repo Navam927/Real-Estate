@@ -10,26 +10,31 @@ import CreateListing from './pages/CreateListing';
 import UpdateListing from './pages/UpdateListing';
 import Listing from './pages/Listing';
 import Search from './pages/Search';
+import OTPPage from './pages/OTPPage';
+import VerifyOtp from './pages/VerifyOtp';
+
+// verify-otp -> enabling 2FA
+// verify_otp -> regular login
 
 export default function App() {
   return (
     <BrowserRouter>
       <Header />
       <Routes>
-        <Route path='/' element={<Home />} />
-        <Route path='/sign-in' element={<SignIn />} />
-        <Route path='/sign-up' element={<SignUp />} />
-        <Route path='/about' element={<About />} />
-        <Route path='/search' element={<Search />} />
-        <Route path='/listing/:listingId' element={<Listing />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/sign-up" element={<SignUp />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/listing/:listingId" element={<Listing />} />
+        <Route path="/verify-otp/:id" element={<OTPPage />} />
+        <Route path="/verify_otp/:id" element={<VerifyOtp />} />
 
+        {/* Private Routes */}
         <Route element={<PrivateRoute />}>
-          <Route path='/profile' element={<Profile />} />
-          <Route path='/create-listing' element={<CreateListing />} />
-          <Route
-            path='/update-listing/:listingId'
-            element={<UpdateListing />}
-          />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/create-listing" element={<CreateListing />} />
+          <Route path="/update-listing/:listingId" element={<UpdateListing />} />
         </Route>
       </Routes>
     </BrowserRouter>

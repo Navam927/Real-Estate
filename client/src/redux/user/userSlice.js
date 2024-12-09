@@ -58,6 +58,33 @@ const userSlice = createSlice({
       state.error = action.payload;
       state.loading = false;
     },
+    toggle2faStart: (state) => {
+      state.loading = true;
+    },
+    toggle2faSuccess: (state, action) => {
+      state.currentUser = {
+        ...state.currentUser,
+        twoFAEnabled: action.payload.twoFAEnabled,
+      };
+      state.loading = false;
+      state.error = null;
+    },
+    toggle2faFailure: (state, action) => {
+      state.error = action.payload;
+      state.loading = false;
+    },
+    fetchUserStart : (state) => {
+      state.loading = true;
+    },
+    fetchUserSuccess : (state, action) => {
+      state.currentUser = action.payload;
+      state.loading = false;
+      state.error = null;
+    },
+    fetchUserFailure : (state, action) => {
+      state.error = action.payload;
+      state.loading = false;
+    }
   },
 });
 
@@ -65,15 +92,21 @@ export const {
   signInStart,
   signInSuccess,
   signInFailure,
-  updateUserFailure,
-  updateUserSuccess,
   updateUserStart,
-  deleteUserFailure,
-  deleteUserSuccess,
+  updateUserSuccess,
+  updateUserFailure,
   deleteUserStart,
-  signOutUserFailure,
-  signOutUserSuccess,
+  deleteUserSuccess,
+  deleteUserFailure,
   signOutUserStart,
+  signOutUserSuccess,
+  signOutUserFailure,
+  toggle2faStart,
+  toggle2faSuccess,
+  toggle2faFailure,
+  fetchUserStart,
+  fetchUserFailure,
+  fetchUserSuccess
 } = userSlice.actions;
 
 export default userSlice.reducer;

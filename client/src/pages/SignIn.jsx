@@ -31,13 +31,19 @@ export default function SignIn() {
         body: JSON.stringify(formData),
       });
       const data = await res.json();
-      console.log(data);
+      console.log('data : ',data);
       if (data.success === false) {
         dispatch(signInFailure(data.message));
         return;
       }
-      dispatch(signInSuccess(data));
-      navigate('/');
+      if(data.message === 'OTP sent successfully. Please verify to continue.') {
+        navigate(`/verify_otp/${data.id}`);   
+      } else {
+        dispatch(signInSuccess(data));
+        navigate('/profile');
+      }
+      
+      
     } catch (error) {
       dispatch(signInFailure(error.message));
     }

@@ -43,6 +43,7 @@ export const deleteUser = async (req, res, next) => {
     return next(errorHandler(401, 'You can only delete your own account!'));
   try {
     await User.findByIdAndDelete(req.params.id);
+    console.log('user deleted');
     res.clearCookie('access_token');
     res.status(200).json('User has been deleted!');
   } catch (error) {
@@ -77,3 +78,25 @@ export const getUser = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getStatus = async (req, res, next) => {
+  try {
+    console.log('Fetching user status');
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return next(errorHandler(404, 'User not found!'));
+    }
+
+    return res.status(200).json({
+      success: true,
+      twoFAEnabled: user.twoFAEnabled,
+      message: user.twoFAEnabled ? '2FA is enabled' : '2FA is not enabled',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+

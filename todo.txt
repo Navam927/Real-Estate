@@ -1,0 +1,14 @@
+profile page 
+    toggle 2fa
+        new page
+            display email with button disabled
+            send mail button 
+            redirect -> otp page 
+                otp -> ok
+                    2fa -> on
+                    redirect -> profile page with 2fa on 
+                otp -> wrong 
+                    otp attempts++
+                back -> profile page with 2fa off
+                
+                
