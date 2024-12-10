@@ -111,7 +111,7 @@ export const verifyLoginOtp = async (req, res) => {
     delete userData.password;
 
     res.cookie('access_token', token, {
-      secure : false,
+      secure : true,
       sameSite : 'None',
       httpOnly : true,
       maxAge : 24 * 60 * 60 * 1000,
