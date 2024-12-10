@@ -79,23 +79,7 @@ export const getUser = async (req, res, next) => {
   }
 };
 
-export const getStatus = async (req, res, next) => {
-  try {
-    console.log('Fetching user status');
-    const user = await User.findById(req.params.id);
-    if (!user) {
-      return next(errorHandler(404, 'User not found!'));
-    }
 
-    return res.status(200).json({
-      success: true,
-      twoFAEnabled: user.twoFAEnabled,
-      message: user.twoFAEnabled ? '2FA is enabled' : '2FA is not enabled',
-    });
-  } catch (error) {
-    next(error);
-  }
-};
 
 
 

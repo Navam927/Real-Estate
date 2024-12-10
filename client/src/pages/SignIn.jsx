@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   signInStart,
-  signInSuccess,
   signInFailure,
 } from '../redux/user/userSlice';
 
@@ -31,19 +30,19 @@ export default function SignIn() {
         body: JSON.stringify(formData),
       });
       const data = await res.json();
-      console.log('data : ',data);
+      console.log('data : ', data);
+
       if (data.success === false) {
         dispatch(signInFailure(data.message));
         return;
       }
-      if(data.message === 'OTP sent successfully. Please verify to continue.') {
-        navigate(`/verify_otp/${data.id}`);   
-      } else {
-        dispatch(signInSuccess(data));
-        navigate('/profile');
+      const userId = data.data;
+      if (!userId) {
+        throw new Error("User ID is missing from response data");
       }
-      
-      
+
+      navigate(`/login/${userId}`);
+
     } catch (error) {
       dispatch(signInFailure(error.message));
     }
@@ -73,7 +72,7 @@ export default function SignIn() {
         >
           {loading ? 'Loading...' : 'Sign In'}
         </button>
-        
+
       </form>
       <div className='flex gap-2 mt-5'>
         <p>Dont have an account?</p>
