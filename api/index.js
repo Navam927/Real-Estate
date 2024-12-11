@@ -7,7 +7,8 @@ import listingRouter from "./routes/listing.route.js";
 import cloudinary from "cloudinary";
 import cookieParser from "cookie-parser";
 import path from "path";
-import cors from 'cors';
+import cors from "cors";
+import Razorpay from "razorpay";
 dotenv.config();
 
 mongoose
@@ -35,11 +36,11 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin : "http://localhost:5173",
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
-)
+);
 
 app.listen(3000, () => {
   console.log("Server is running on port 3000!");
@@ -65,16 +66,61 @@ app.use((err, req, res, next) => {
   });
 });
 
+app.post("/order", async (req, res) => {
+  try {
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+
+    if (!req.body) {
+      return res.status(400).send("No req.body found");
+    }
+
+    const options = req.body;
+
+    const order = await razorpay.orders.create(options);
+
+    if (!order) {
+      return res.status(400).send("No order found");
+    }
+    res.json(order);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
+});
+
+app.post("/validate", (req, res) => {
+  const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
+    req.body;
+
+  const sha = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET);
+
+  sha.update(`${razorpay_order_id}|${razorpay_payment_id}`);
+  const digest = sha.digest("hex");
+
+  if (digest !== razorpay_signature) {
+    return res.status(400).send("Digest mismatch");
+  }
+  res.json({
+    msg: "Legit Transaction",
+    order_id: razorpay_order_id,
+    payment_id: razorpay_payment_id,
+  });
+});
+
 const isCloudinaryConnected = async () => {
   try {
     await cloudinary.v2.api.resources();
     return true;
   } catch (error) {
-    console.error('Cloudinary connection error:', error);
+    console.error("Cloudinary connection error:", error);
     return false;
   }
-};if (await isCloudinaryConnected()) {
-  console.log('Cloudinary is connected');
+};
+if (await isCloudinaryConnected()) {
+  console.log("Cloudinary is connected");
 } else {
-  console.log('Cloudinary is not connected');
+  console.log("Cloudinary is not connected");
 }
