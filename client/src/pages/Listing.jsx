@@ -53,8 +53,8 @@ export default function Listing() {
 
   const paymentHandler = async (event) => {
     const amount = listing.offer
-      ? listing.discountPrice * 100
-      : listing.regularPrice * 100;
+      ? listing.regularPrice * 100
+      : listing.discountPrice * 100;
     const currency = "INR";
     const receiptId = "receipt#1";
 
@@ -80,7 +80,8 @@ export default function Listing() {
       currency,
       name: "RealEstate",
       description: "Test Transaction",
-      image: "https://i.ibb.co/5Y3m33n/test.png",
+      image:
+        "https://res.cloudinary.com/dy4lefnyu/image/upload/v1733831643/c3m2kj6f9p9filjukoqb.jpg",
       order_id: order.id,
       handler: async function (response) {
         const body = { ...response };

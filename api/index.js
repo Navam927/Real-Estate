@@ -9,6 +9,7 @@ import cookieParser from "cookie-parser";
 import path from "path";
 import cors from "cors";
 import Razorpay from "razorpay";
+import crypto from "crypto";
 dotenv.config();
 
 mongoose
@@ -91,23 +92,27 @@ app.post("/order", async (req, res) => {
   }
 });
 
-app.post("/validate", (req, res) => {
-  const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
-    req.body;
+app.post("/order/validate", (req, res) => {
+  try {
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
+      req.body;
 
-  const sha = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET);
+    const sha = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET);
 
-  sha.update(`${razorpay_order_id}|${razorpay_payment_id}`);
-  const digest = sha.digest("hex");
+    sha.update(`${razorpay_order_id}|${razorpay_payment_id}`);
+    const digest = sha.digest("hex");
 
-  if (digest !== razorpay_signature) {
-    return res.status(400).send("Digest mismatch");
+    if (digest !== razorpay_signature) {
+      return res.status(400).send("Digest mismatch");
+    }
+    res.json({
+      msg: "Legit Transaction",
+      order_id: razorpay_order_id,
+      payment_id: razorpay_payment_id,
+    });
+  } catch (error) {
+    console.log(error.message);
   }
-  res.json({
-    msg: "Legit Transaction",
-    order_id: razorpay_order_id,
-    payment_id: razorpay_payment_id,
-  });
 });
 
 const isCloudinaryConnected = async () => {
